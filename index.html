@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Harvex | تطبيق المزرعة</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap');
+
+    :root {
+      --bg: #f8fafc; --surface: #ffffff; --text-main: #0f172a; --text-muted: #64748b;
+      --primary: #10b981; --primary-dark: #047857; --border: #e2e8f0;
+      --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      --radius: 20px;
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Tajawal', sans-serif;}
+    body { margin: 0; background: var(--bg); color: var(--text-main); padding-bottom: 90px; }
+
+    .app { width: min(500px, 100%); margin: 0 auto; padding: 16px; }
+
+    /* الهيدر */
+    .header { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; padding: 20px; border-radius: var(--radius); margin-bottom: 20px; text-align: center; box-shadow: var(--shadow-sm);}
+    .header h1 { margin: 0; font-size: 24px; }
+    
+    /* البطاقات والنماذج */
+    .card { background: var(--surface); border-radius: var(--radius); padding: 16px; border: 1px solid var(--border); margin-bottom: 16px; box-shadow: var(--shadow-sm); }
+    .card h2 { margin-top: 0; font-size: 18px; color: var(--primary-dark); border-bottom: 2px solid var(--border); padding-bottom: 10px;}
+
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; font-size: 14px; font-weight: 700; margin-bottom: 6px; color: var(--text-muted);}
+    .form-group input, .form-group select { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border); font-size: 14px; outline: none;}
+    .form-group input:focus, .form-group select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2); }
+    
+    .btn { width: 100%; background: var(--primary); color: white; border: none; padding: 14px; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s;}
+    .btn:active { transform: scale(0.98); background: var(--primary-dark); }
+
+    /* تصميم السجلات */
+    .record-item { background: var(--surface); border: 1px solid var(--border); padding: 12px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;}
+    .record-info h3 { margin: 0 0 4px 0; font-size: 16px; }
+    .record-info p { margin: 0; font-size: 12px; color: var(--text-muted); }
+    .record-total { font-size: 18px; font-weight: bold; color: var(--primary-dark); }
+
+    /* شريط التنقل السفلي */
+    .bottom-nav { position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%); width: min(460px, calc(100% - 20px)); background: white; border-radius: 30px; display: flex; justify-content: space-around; padding: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid var(--border);}
+    .nav-btn { background: none; border: none; font-size: 14px; font-weight: bold; color: var(--text-muted); padding: 10px 20px; border-radius: 20px; cursor: pointer;}
+    .nav-btn.active { background: var(--primary-light); color: var(--primary-dark); }
+
+    /* الصفحات */
+    .page { display: none; }
+    .page.active { display: block; animation: fadeIn 0.3s; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+
+  <div class="app">
+    <div class="header">
+      <h1>🌱 Harvex</h1>
+      <p>نظام إدارة المزرعة الذكي</p>
+    </div>
+
+    <!-- صفحة إضافة قطفة -->
+    <div id="add-page" class="page active">
+      <div class="card">
+        <h2>إضافة قطفة جديدة</h2>
+        <form id="harvest-form">
+          <div class="form-group">
+            <label>المحصول</label>
+            <input type="text" id="product" placeholder="مثال: بندورة" required>
+          </div>
+          <div class="form-group">
+            <label>القسم</label>
+            <select id="section">
+              <option value="motez">معتز</option>
+              <option value="waleed">وليد</option>
+            </select>
+          </div>
+          <div class="form-group" style="display: flex; gap: 10px;">
+            <div style="flex: 1;">
+              <label>الكمية</label>
+              <input type="number" id="qty" placeholder="مثال: 50" required>
+            </div>
+            <div style="flex: 1;">
+              <label>السعر للوحدة (₪)</label>
+              <input type="number" id="price" placeholder="مثال: 20" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>التاجر (المشتري)</label>
+            <input type="text" id="buyer" placeholder="اسم التاجر" required>
+          </div>
+          <div class="form-group">
+            <label>حالة المحاسبة</label>
+            <select id="accounted">
+              <option value="باقي">باقي (غير محاسب)</option>
+              <option value="محاسب">تمت المحاسبة</option>
+            </select>
+          </div>
+          <button type="submit" class="btn" id="submit-btn">حفظ القطفة 💾</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- صفحة السجلات -->
+    <div id="records-page" class="page">
+      <div class="card">
+        <h2>سجل القطفات</h2>
+        <div id="records-container">
+          <p style="text-align: center; color: gray;">جاري جلب البيانات...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- شريط التنقل السفلي -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" onclick="switchPage('add-page', this)">إضافة ➕</button>
+    <button class="nav-btn" onclick="switchPage('records-page', this); fetchRecords();">السجلات 📋</button>
+  </nav>
+
+  <script>
+    // رابط السيرفر الذي قمنا بتشغيله (FastAPI)
+    const API_URL = "http://127.0.0.1:8000";
+
+    // دالة التنقل بين الصفحات
+    function switchPage(pageId, btn) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(pageId).classList.add('active');
+      btn.classList.add('active');
+    }
+
+    // --- الاتصال بالسيرفر (Backend) ---
+
+    // 1. إرسال قطفة جديدة
+    document.getElementById('harvest-form').addEventListener('submit', async function(e) {
+      e.preventDefault(); // منع تحديث الصفحة
+      const btn = document.getElementById('submit-btn');
+      btn.innerText = "جاري الحفظ... ⏳";
+
+      // تجهيز البيانات
+      const recordData = {
+        section: document.getElementById('section').value,
+        date: new Date().toISOString().split('T')[0], // تاريخ اليوم
+        day: new Date().toLocaleDateString('ar-EG-u-nu-latn', { weekday: 'long' }), // اسم اليوم
+        product: document.getElementById('product').value,
+        qty: parseFloat(document.getElementById('qty').value),
+        unit: "كرتونة", // افتراضي حالياً
+        price: parseFloat(document.getElementById('price').value),
+        buyer: document.getElementById('buyer').value,
+        accounted: document.getElementById('accounted').value,
+        notes: ""
+      };
+
+      try {
+        const response = await fetch(`${API_URL}/records/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(recordData)
+        });
+
+        if (response.ok) {
+          alert('✅ تم حفظ القطفة بنجاح في قاعدة البيانات!');
+          this.reset(); // تفريغ الحقول
+        } else {
+          alert('❌ حدث خطأ أثناء الحفظ.');
+        }
+      } catch (error) {
+        alert('❌ لا يمكن الاتصال بالسيرفر. تأكد أن السيرفر (FastAPI) يعمل.');
+      } finally {
+        btn.innerText = "حفظ القطفة 💾";
+      }
+    });
+
+    // 2. جلب وعرض السجلات
+    async function fetchRecords() {
+      const container = document.getElementById('records-container');
+      container.innerHTML = '<p style="text-align: center; color: gray;">جاري جلب البيانات... ⏳</p>';
+
+      try {
+        const response = await fetch(`${API_URL}/records/`);
+        const records = await response.json();
+
+        if (records.length === 0) {
+          container.innerHTML = '<p style="text-align: center; color: gray;">لا توجد قطفات مسجلة حتى الآن.</p>';
+          return;
+        }
+
+        container.innerHTML = ''; // مسح النص
+        records.forEach(rec => {
+          // رسم بطاقة لكل قطفة
+          const item = document.createElement('div');
+          item.className = 'record-item';
+          item.innerHTML = `
+            <div class="record-info">
+              <h3>${rec.product} - <span style="font-size:12px; color:var(--primary-dark)">${rec.section === 'waleed' ? 'وليد' : 'معتز'}</span></h3>
+              <p>${rec.date} • ${rec.buyer} • ${rec.qty} ${rec.unit}</p>
+              <span style="font-size: 11px; background: #fef3c7; color: #d97706; padding: 2px 6px; border-radius: 10px;">${rec.accounted}</span>
+            </div>
+            <div class="record-total">${rec.total} ₪</div>
+          `;
+          container.appendChild(item);
+        });
+
+      } catch (error) {
+        container.innerHTML = '<p style="text-align: center; color: red;">❌ فشل الاتصال بالسيرفر.</p>';
+      }
+    }
+  </script>
+</body>
+</html>
